@@ -1,0 +1,922 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Prem-Advanced AI Assistant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+      :root {
+        --primary-color: #4285F4;
+        --secondary-color: #34A853;
+        --accent-color: #EA4335;
+        --background-color: #f8f9fa;
+        --user-message-bg: #e3f2fd;
+        --agent-message-bg: #ffffff;
+        --border-color: #dadce0;
+        --text-color: #202124;
+        --secondary-text-color: #5f6368;
+        --sidebar-width: 250px;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: 'Roboto', sans-serif;
+        background-color: var(--background-color);
+        color: var(--text-color);
+        line-height: 1.6;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .app-container {
+        display: flex;
+        height: 100vh;
+        width: 100%;
+      }
+
+      .sidebar {
+        width: var(--sidebar-width);
+        background-color: #fff;
+        border-right: 1px solid var(--border-color);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      header {
+        text-align: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--border-color);
+        background-color: white;
+      }
+
+      h1 {
+        color: var(--primary-color);
+        font-size: 1.8rem;
+        margin-bottom: 5px;
+      }
+
+      .subtitle {
+        color: var(--secondary-text-color);
+        font-size: 0.9rem;
+        font-weight: 300;
+      }
+
+      .chat-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        overflow: hidden;
+      }
+
+      #messages {
+        flex: 1;
+        overflow-y: auto;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 15px;
+        background-color: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+      }
+
+      .message {
+        padding: 12px 15px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        position: relative;
+        max-width: 85%;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      }
+
+      .user-message {
+        background-color: var(--user-message-bg);
+        margin-left: auto;
+        border-bottom-right-radius: 0;
+        text-align: right;
+        font-weight: 500;
+      }
+
+      .agent-message {
+        background-color: var(--agent-message-bg);
+        margin-right: auto;
+        border-bottom-left-radius: 0;
+        border-left: 4px solid var(--secondary-color);
+        font-weight: 400;
+      }
+
+      .message-label {
+        font-size: 0.8rem;
+        color: var(--secondary-text-color);
+        margin-bottom: 5px;
+        font-weight: 500;
+      }
+
+      .message-content {
+        word-wrap: break-word;
+      }
+
+      .message-file {
+        margin-top: 10px;
+        padding: 8px;
+        background-color: #f1f3f4;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+      }
+
+      .message-file i {
+        margin-right: 8px;
+        color: var(--primary-color);
+      }
+
+      .message-file a {
+        color: var(--primary-color);
+        text-decoration: none;
+      }
+
+      .message-file a:hover {
+        text-decoration: underline;
+      }
+
+      .message-image img {
+        max-width: 100%;
+        border-radius: 4px;
+        margin-top: 10px;
+      }
+
+      .message-audio audio {
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .input-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 0 20px 20px 20px;
+      }
+
+      .input-options {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .option-button {
+        background-color: white;
+        border: 1px solid var(--border-color);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .option-button:hover {
+        background-color: #f1f3f4;
+        border-color: var(--primary-color);
+      }
+
+      .option-button i {
+        color: var(--primary-color);
+        font-size: 1.2rem;
+      }
+
+      .option-button.recording {
+        background-color: var(--accent-color);
+      }
+
+      .option-button.recording i {
+        color: white;
+      }
+
+      #messageForm {
+        display: flex;
+        gap: 10px;
+      }
+
+      #message {
+        flex: 1;
+        padding: 12px 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 24px;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.3s;
+        resize: none;
+        max-height: 120px;
+        min-height: 50px;
+      }
+
+      #message:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+      }
+
+      #sendButton {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 24px;
+        padding: 12px 24px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        align-self: flex-end;
+      }
+
+      #sendButton:hover {
+        background-color: #3367d6;
+      }
+
+      #sendButton:disabled {
+        background-color: #c5c5c5;
+        cursor: not-allowed;
+      }
+
+      .connection-status {
+        text-align: center;
+        padding: 10px;
+        background-color: #fef9e7;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        font-weight: 500;
+      }
+
+      .typing-indicator {
+        display: inline-block;
+        width: 50px;
+        text-align: left;
+      }
+
+      .typing-indicator span {
+        height: 8px;
+        width: 8px;
+        float: left;
+        margin: 0 1px;
+        background-color: var(--secondary-text-color);
+        display: block;
+        border-radius: 50%;
+        opacity: 0.4;
+      }
+
+      .typing-indicator span:nth-of-type(1) {
+        animation: 1s blink infinite 0.3333s;
+      }
+
+      .typing-indicator span:nth-of-type(2) {
+        animation: 1s blink infinite 0.6666s;
+      }
+
+      .typing-indicator span:nth-of-type(3) {
+        animation: 1s blink infinite 0.9999s;
+      }
+
+      @keyframes blink {
+        50% {
+          opacity: 1;
+        }
+      }
+
+      .sidebar-header {
+        margin-bottom: 20px;
+      }
+
+      .sidebar-title {
+        font-size: 1.2rem;
+        font-weight: 500;
+        margin-bottom: 5px;
+      }
+
+      .sidebar-subtitle {
+        font-size: 0.8rem;
+        color: var(--secondary-text-color);
+      }
+
+      .sidebar-section {
+        margin-bottom: 20px;
+      }
+
+      .sidebar-section-title {
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 10px;
+        color: var(--secondary-text-color);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .sidebar-item {
+        padding: 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+      }
+
+      .sidebar-item:hover {
+        background-color: #f1f3f4;
+      }
+
+      .sidebar-item i {
+        margin-right: 10px;
+        color: var(--primary-color);
+      }
+
+      .sidebar-item.active {
+        background-color: #e8f0fe;
+        color: var(--primary-color);
+      }
+
+      .file-upload-container {
+        display: none;
+      }
+
+      #fileUpload {
+        display: none;
+      }
+
+      .file-preview {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #f1f3f4;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .file-preview i {
+        margin-right: 10px;
+        color: var(--primary-color);
+      }
+
+      .file-preview-remove {
+        color: var(--accent-color);
+        cursor: pointer;
+      }
+
+      .audio-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .audio-timer {
+        font-size: 0.8rem;
+        color: var(--secondary-text-color);
+      }
+
+      .audio-visualizer {
+        flex: 1;
+        height: 30px;
+        background-color: #f1f3f4;
+        border-radius: 15px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .audio-visualizer-bar {
+        height: 100%;
+        width: 0;
+        background-color: var(--primary-color);
+        transition: width 0.3s;
+      }
+
+      @media (max-width: 768px) {
+        .app-container {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          width: 100%;
+          height: auto;
+          border-right: none;
+          border-bottom: 1px solid var(--border-color);
+          padding: 10px;
+        }
+
+        .main-content {
+          height: calc(100vh - 150px);
+        }
+
+        h1 {
+          font-size: 1.5rem;
+        }
+
+        .message {
+          max-width: 90%;
+        }
+
+        .input-options {
+          flex-wrap: wrap;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app-container">
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-title">Advanced AI Assistant</div>
+          <div class="sidebar-subtitle">Powered by Google Gemini</div>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Interaction Modes</div>
+          <div class="sidebar-item active" id="text-mode">
+            <i class="fas fa-comment"></i> Text Chat
+          </div>
+          <div class="sidebar-item" id="voice-mode">
+            <i class="fas fa-microphone"></i> Voice Chat
+          </div>
+          <div class="sidebar-item" id="file-mode">
+            <i class="fas fa-file"></i> File Upload
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Recent Conversations</div>
+          <div class="sidebar-item">
+            <i class="fas fa-history"></i> Research Project
+          </div>
+          <div class="sidebar-item">
+            <i class="fas fa-history"></i> Data Analysis
+          </div>
+        </div>
+      </div>
+
+      <div class="main-content">
+        <header>
+          <h1>Advanced AI Assistant</h1>
+          <p class="subtitle">Ask me anything through text, voice, or files</p>
+        </header>
+
+        <div class="chat-container">
+          <div id="connection-status" class="connection-status">Connecting...</div>
+          <div id="messages"></div>
+        </div>
+
+        <div class="input-container">
+          <div class="input-options">
+            <div class="option-button" id="uploadButton" title="Upload File">
+              <i class="fas fa-paperclip"></i>
+            </div>
+            <div class="option-button" id="micButton" title="Voice Input">
+              <i class="fas fa-microphone"></i>
+            </div>
+            <div class="option-button" id="cameraButton" title="Camera">
+              <i class="fas fa-camera"></i>
+            </div>
+            <input type="file" id="fileUpload" multiple />
+          </div>
+
+          <div id="filePreviewContainer"></div>
+          <div id="audioRecordingContainer" style="display: none;">
+            <div class="audio-controls">
+              <div class="audio-timer">00:00</div>
+              <div class="audio-visualizer">
+                <div class="audio-visualizer-bar"></div>
+              </div>
+            </div>
+          </div>
+
+          <form id="messageForm">
+            <textarea id="message" name="message" placeholder="Type your question here..." autocomplete="off" rows="1"></textarea>
+            <button type="submit" id="sendButton" disabled>Send</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    // Connect the server with a WebSocket connection
+    const sessionId = Math.random().toString().substring(10);
+    const ws_url = "ws://" + window.location.host + "/ws/" + sessionId;
+    let ws = new WebSocket(ws_url);
+
+    // Get DOM elements
+    const messageForm = document.getElementById("messageForm");
+    const messageInput = document.getElementById("message");
+    const messagesDiv = document.getElementById("messages");
+    const connectionStatus = document.getElementById("connection-status");
+    const fileUpload = document.getElementById("fileUpload");
+    const filePreviewContainer = document.getElementById("filePreviewContainer");
+    const uploadButton = document.getElementById("uploadButton");
+    const micButton = document.getElementById("micButton");
+    const cameraButton = document.getElementById("cameraButton");
+    const audioRecordingContainer = document.getElementById("audioRecordingContainer");
+    const audioTimer = document.querySelector(".audio-timer");
+    const audioVisualizerBar = document.querySelector(".audio-visualizer-bar");
+
+    // Sidebar mode buttons
+    const textModeButton = document.getElementById("text-mode");
+    const voiceModeButton = document.getElementById("voice-mode");
+    const fileModeButton = document.getElementById("file-mode");
+
+    let currentMessageId = null;
+    let currentMessageElement = null;
+    let selectedFiles = [];
+    let isRecording = false;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recordingStartTime = 0;
+    let recordingTimer = null;
+    let currentMode = "text";
+
+    // Create a typing indicator element
+    function createTypingIndicator() {
+      const indicator = document.createElement("div");
+      indicator.className = "typing-indicator";
+      indicator.innerHTML = "<span></span><span></span><span></span>";
+      return indicator;
+    }
+
+    // Create a message element with proper styling
+    function createMessageElement(isUser, text = "", attachments = []) {
+      const messageContainer = document.createElement("div");
+      messageContainer.className = isUser ? "message user-message" : "message agent-message";
+
+      const label = document.createElement("div");
+      label.className = "message-label";
+      label.textContent = isUser ? "You" : "Assistant";
+      messageContainer.appendChild(label);
+
+      const content = document.createElement("div");
+      content.className = "message-content";
+      content.textContent = text;
+      messageContainer.appendChild(content);
+
+      // Add attachments if any
+      if (attachments && attachments.length > 0) {
+        attachments.forEach(attachment => {
+          if (attachment.type.startsWith("image/")) {
+            // Image attachment
+            const imageContainer = document.createElement("div");
+            imageContainer.className = "message-image";
+            const image = document.createElement("img");
+            image.src = URL.createObjectURL(attachment);
+            image.alt = attachment.name;
+            imageContainer.appendChild(image);
+            messageContainer.appendChild(imageContainer);
+          } else if (attachment.type.startsWith("audio/")) {
+            // Audio attachment
+            const audioContainer = document.createElement("div");
+            audioContainer.className = "message-audio";
+            const audio = document.createElement("audio");
+            audio.controls = true;
+            audio.src = URL.createObjectURL(attachment);
+            audioContainer.appendChild(audio);
+            messageContainer.appendChild(audioContainer);
+          } else {
+            // File attachment
+            const fileContainer = document.createElement("div");
+            fileContainer.className = "message-file";
+            const icon = document.createElement("i");
+            icon.className = "fas fa-file";
+            const fileLink = document.createElement("a");
+            fileLink.href = URL.createObjectURL(attachment);
+            fileLink.download = attachment.name;
+            fileLink.textContent = attachment.name;
+            fileContainer.appendChild(icon);
+            fileContainer.appendChild(fileLink);
+            messageContainer.appendChild(fileContainer);
+          }
+        });
+      }
+
+      return { container: messageContainer, content: content };
+    }
+
+    // Clear initial messages
+    function clearInitialMessages() {
+      if (messagesDiv.textContent.includes("Connection opened")) {
+        messagesDiv.innerHTML = "";
+      }
+    }
+
+    // Format time for audio recording
+    function formatTime(ms) {
+      const seconds = Math.floor(ms / 1000);
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    // Start audio recording
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          const audioFile = new File([audioBlob], "recording.wav", { type: 'audio/wav' });
+          sendMessage("", [audioFile]);
+          stopRecordingUI();
+        };
+
+        mediaRecorder.start();
+        startRecordingUI();
+      } catch (error) {
+        console.error("Error starting recording:", error);
+        alert("Could not access microphone. Please check permissions.");
+      }
+    }
+
+    // Stop audio recording
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+      }
+    }
+
+    // Start recording UI updates
+    function startRecordingUI() {
+      isRecording = true;
+      micButton.classList.add("recording");
+      audioRecordingContainer.style.display = "block";
+      recordingStartTime = Date.now();
+
+      // Update timer
+      recordingTimer = setInterval(() => {
+        const elapsed = Date.now() - recordingStartTime;
+        audioTimer.textContent = formatTime(elapsed);
+
+        // Update visualizer (simulate activity)
+        const randomWidth = Math.floor(20 + Math.random() * 80);
+        audioVisualizerBar.style.width = `${randomWidth}%`;
+      }, 100);
+    }
+
+    // Stop recording UI updates
+    function stopRecordingUI() {
+      isRecording = false;
+      micButton.classList.remove("recording");
+      audioRecordingContainer.style.display = "none";
+      clearInterval(recordingTimer);
+      audioTimer.textContent = "00:00";
+      audioVisualizerBar.style.width = "0";
+    }
+
+    // Handle file selection
+    function handleFileSelect(files) {
+      selectedFiles = Array.from(files);
+      filePreviewContainer.innerHTML = "";
+
+      selectedFiles.forEach(file => {
+        const filePreview = document.createElement("div");
+        filePreview.className = "file-preview";
+
+        const icon = document.createElement("i");
+        if (file.type.startsWith("image/")) {
+          icon.className = "fas fa-image";
+        } else if (file.type.startsWith("audio/")) {
+          icon.className = "fas fa-music";
+        } else if (file.type.startsWith("video/")) {
+          icon.className = "fas fa-video";
+        } else {
+          icon.className = "fas fa-file";
+        }
+
+        const fileName = document.createElement("span");
+        fileName.textContent = file.name;
+
+        const removeButton = document.createElement("i");
+        removeButton.className = "fas fa-times file-preview-remove";
+        removeButton.onclick = () => {
+          selectedFiles = selectedFiles.filter(f => f !== file);
+          filePreview.remove();
+        };
+
+        filePreview.appendChild(icon);
+        filePreview.appendChild(fileName);
+        filePreview.appendChild(removeButton);
+        filePreviewContainer.appendChild(filePreview);
+      });
+    }
+
+    // Switch interaction mode
+    function switchMode(mode) {
+      currentMode = mode;
+
+      // Update sidebar active state
+      [textModeButton, voiceModeButton, fileModeButton].forEach(btn => {
+        btn.classList.remove("active");
+      });
+
+      // Set active mode
+      if (mode === "text") {
+        textModeButton.classList.add("active");
+        messageInput.placeholder = "Type your question here...";
+      } else if (mode === "voice") {
+        voiceModeButton.classList.add("active");
+        messageInput.placeholder = "Voice mode active. Click the microphone icon to start recording...";
+      } else if (mode === "file") {
+        fileModeButton.classList.add("active");
+        messageInput.placeholder = "File mode active. Click the paperclip icon to upload files...";
+      }
+    }
+
+    // WebSocket handlers
+    function addWebSocketHandlers(ws) {
+      ws.onopen = function () {
+        console.log("WebSocket connection opened.");
+        document.getElementById("sendButton").disabled = false;
+        connectionStatus.textContent = "Connected";
+        connectionStatus.style.backgroundColor = "#e6f4ea";
+        addEventListeners(this);
+      };
+
+      ws.onmessage = function (event) {
+        // Parse the incoming message
+        const packet = JSON.parse(event.data);
+        console.log(packet);
+
+        clearInitialMessages();
+
+        // Check if the turn is complete
+        if (packet.turn_complete && packet.turn_complete === true) {
+          currentMessageId = null;
+          currentMessageElement = null;
+          return;
+        }
+
+        // Add a new message for a new turn
+        if (currentMessageId == null) {
+          currentMessageId = Math.random().toString(36).substring(7);
+          const messageElements = createMessageElement(false);
+          currentMessageElement = messageElements.content;
+          messagesDiv.appendChild(messageElements.container);
+        }
+
+        // Add message text to the existing message element
+        if (currentMessageElement && packet.message) {
+          currentMessageElement.textContent += packet.message;
+        }
+
+        // Scroll down to the bottom of the messagesDiv
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      };
+
+      // When the connection is closed, try reconnecting
+      ws.onclose = function () {
+        console.log("WebSocket connection closed.");
+        document.getElementById("sendButton").disabled = true;
+        connectionStatus.textContent = "Connection closed. Reconnecting...";
+        connectionStatus.style.backgroundColor = "#fce8e6";
+
+        setTimeout(function () {
+          console.log("Reconnecting...");
+          ws = new WebSocket(ws_url);
+          addWebSocketHandlers(ws);
+        }, 5000);
+      };
+
+      ws.onerror = function (e) {
+        console.log("WebSocket error: ", e);
+        connectionStatus.textContent = "Connection error. Reconnecting...";
+        connectionStatus.style.backgroundColor = "#fce8e6";
+      };
+    }
+    addWebSocketHandlers(ws);
+
+    // Send message with optional attachments
+    function sendMessage(text, attachments = []) {
+      // Create and add user message
+      const messageElements = createMessageElement(true, text, attachments);
+      messagesDiv.appendChild(messageElements.container);
+
+      // Send message to server
+      ws.send(text || "[File Attachment]");
+
+      // Clear input and attachments
+      messageInput.value = "";
+      selectedFiles = [];
+      filePreviewContainer.innerHTML = "";
+
+      // Scroll to bottom
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // Add all event listeners
+    function addEventListeners(ws) {
+      // Form submission
+      messageForm.onsubmit = function (e) {
+        e.preventDefault();
+        const message = messageInput.value.trim();
+
+        if (message || selectedFiles.length > 0) {
+          sendMessage(message, selectedFiles);
+        }
+
+        return false;
+      };
+
+      // File upload button
+      uploadButton.addEventListener("click", () => {
+        fileUpload.click();
+      });
+
+      // File input change
+      fileUpload.addEventListener("change", (e) => {
+        if (e.target.files.length > 0) {
+          handleFileSelect(e.target.files);
+        }
+      });
+
+      // Microphone button
+      micButton.addEventListener("click", () => {
+        if (isRecording) {
+          stopRecording();
+        } else {
+          startRecording();
+        }
+      });
+
+      // Camera button
+      cameraButton.addEventListener("click", async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          const videoTrack = stream.getVideoTracks()[0];
+          const imageCapture = new ImageCapture(videoTrack);
+
+          const blob = await imageCapture.takePhoto();
+          const file = new File([blob], "camera-capture.jpg", { type: "image/jpeg" });
+
+          handleFileSelect([file]);
+
+          // Stop the camera stream
+          stream.getTracks().forEach(track => track.stop());
+        } catch (error) {
+          console.error("Error accessing camera:", error);
+          alert("Could not access camera. Please check permissions.");
+        }
+      });
+
+      // Mode switching
+      textModeButton.addEventListener("click", () => switchMode("text"));
+      voiceModeButton.addEventListener("click", () => switchMode("voice"));
+      fileModeButton.addEventListener("click", () => switchMode("file"));
+
+      // Auto-resize textarea
+      messageInput.addEventListener("input", () => {
+        messageInput.style.height = "auto";
+        messageInput.style.height = (messageInput.scrollHeight) + "px";
+      });
+
+      // Drag and drop for files
+      messagesDiv.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        messagesDiv.style.border = "2px dashed var(--primary-color)";
+      });
+
+      messagesDiv.addEventListener("dragleave", () => {
+        messagesDiv.style.border = "1px solid var(--border-color)";
+      });
+
+      messagesDiv.addEventListener("drop", (e) => {
+        e.preventDefault();
+        messagesDiv.style.border = "1px solid var(--border-color)";
+
+        if (e.dataTransfer.files.length > 0) {
+          handleFileSelect(e.dataTransfer.files);
+        }
+      });
+    }
+  </script>
+</html>
