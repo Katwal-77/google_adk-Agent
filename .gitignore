@@ -36,6 +36,10 @@ Include/
 Scripts/
 pyvenv.cfg
 
+# Uploaded files
+app/uploads/*
+!app/uploads/.gitkeep
+
 # IDE files
 .idea/
 .vscode/
